@@ -1,0 +1,85 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>blank</title>
+
+	<style type="text/css">
+		canvas { border: 3px solid red; }
+	</style>
+
+	<script type="text/javascript">
+		(function(){
+			window['CLARITY'] = [];
+			var ns = document.createElement('script'),
+			s = document.getElementsByTagName('script')[0];
+			ns.async = true;
+			ns.type = 'text/javascript';
+			ns.src = '//lib.spinmedia.com/clarity.min.js';
+			s.parentNode.insertBefore(ns, s);
+		})();
+	</script>
+</head>
+
+<body>
+	<div id="master">
+		<canvas id="paper" height="500" width="500"></canvas>	
+	</div><!-- /#master -->
+
+	<script type="text/javascript">
+	</script>
+
+	<script type="text/javascript">
+		CLARITY.push({
+			use: ['jquery', 'doubleunderscore', 'plugin'],
+			run: function($, __, plugin){
+				plugin.loadModule('messenger_client.js', {
+					use: ['messenger_client'],
+					run: function(MessengerClient){
+						var client = new MessengerClient({
+							url: 'ws://sb-129.net:12345/room',
+							reconnect: false,
+							params: {
+								user_name: 'Kris',
+								user_id: 'abc123'
+							}
+						});
+
+						client.on('debug', function(){
+							// console.log('debug', arguments);
+						});
+
+						client.on('open', function(){
+							var room = client.join('canvas');
+
+							var canvas = document.getElementById('paper').getContext('2d');
+
+							$('#paper').on('mousemove', function(e){
+								client.send({
+									type: 'event',
+									name: 'draw',
+									room: 'canvas',
+									data: {
+										x: e.offsetX,
+										y: e.offsetY
+									}
+								});
+							});
+
+							room.on('draw', function(data, user){
+								canvas.beginPath();
+								canvas.arc(data.x, data.y, 5, 0, 2 * Math.PI, true);
+								canvas.fill();
+							});
+						});
+
+						client.open();
+					}
+				});
+			}
+		});
+
+		
+	</script>
+</body>
+</html>

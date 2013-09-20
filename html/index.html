@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8"/>
+	<title>messenger</title>
+
+	<script type="text/javascript">
+		(function(){
+			window['CLARITY'] = [];
+			var ns = document.createElement('script'),
+			s = document.getElementsByTagName('script')[0];
+			ns.async = true;
+			ns.type = 'text/javascript';
+			ns.src = '//lib.spinmedia.com/clarity.min.js';
+			s.parentNode.insertBefore(ns, s);
+		})();
+	</script>
+</head>
+
+<body>
+	<div id="master">
+		<fieldset>
+			<legend>Send Message</legend>
+
+			<ul>
+				<li><input id="type" type="text" size="45" placeholder="type"/></li>
+				<li><input id="room" type="text" size="45" placeholder="room"/></li>
+				<li><input id="name" type="text" size="45" placeholder="name"/></li>
+				<li><input id="data" type="text" size="45" placeholder="data"/></li>
+				<li><button id="send">Send</button></li>
+			</ul>
+		</fieldset>
+
+		<fieldset>
+			<legend>Join / Part Room</legend>
+
+			<ul>
+				<li><input id="room_name" type="text" placeholder="room name"/></li>
+				<li><button id="join">Join</button> <button id="part">Part</button></li>
+			</ul>
+		</fieldset>
+
+		<div id="log"></div>
+	</div><!-- /#master -->
+
+	<script type="text/javascript">
+		CLARITY.push({
+			use: ['jquery', 'doubleunderscore', 'plugin'],
+			run: function($, __, plugin){
+				plugin.loadModule('messenger_client.js', {
+					use: ['messenger_client'],
+					run: function(MessengerClient){
+						var $type = $('#type');
+						var $room = $('#room');
+						var $name = $('#name');
+						var $data = $('#data');
+						var $send = $('#send');
+						var $log = $('#log');
+
+						var client = new MessengerClient({
+							url: 'ws://sb-129.net:12345/room',
+							reconnect: false,
+							params: {
+								user_name: 'Kris',
+								user_id: 'abc123'
+							}
+						});
+
+						client.on('debug', function(){
+							console.dir(arguments);
+						});
+
+						client.open();
+
+						$send.on('click', function(e){
+							e.preventDefault();
+
+							client.send({
+								type: $type.val(),
+								room: $room.val(),
+								name: $name.val(),
+								data: $data.val().length ? JSON.parse($data.val()) : {}
+							});
+						});
+
+						$room_name = $('#room_name');
+						$join = $('#join');
+						$part = $('#part');
+
+						$join.on('click', function(e){
+							e.preventDefault();
+
+							console.log('join');
+							client.join($room_name.val());
+							console.log('client', client);
+						});
+
+						$part.on('click', function(e){
+							e.preventDefault();
+
+							client.part($room_name.val());
+						});
+					}
+				});
+
+				__.globalevents.on('mc_message', function(){
+					console.dir(arguments);
+				});
+			}
+		});
+	</script>
+</body>
+</html>
