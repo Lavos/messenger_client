@@ -1,4 +1,4 @@
-(function(__){
+var MessengerClient = (function(){
 	var MessengerClient = function MessengerClient (params) {
 		var self = this;
 
@@ -90,9 +90,9 @@
 			};
 
 			self.fire('message', message);
-			self.fire.call(self, message.room, message.name, message.data, message.user);
+			self.fire.call(self, message.room, message.name, message.data);
 			self.fire.call(self, __.sprintf("%s:%s", message.room, message.name), message.data, message.user);
-			self.fire.call(self, message.name, message.room, message.data, message.user);
+			self.fire.call(self, message.name, message.room, message.data);
 			
 			if (__.hasPath(self, __.sprintf('rooms.%s', message.room))) {
 				self.rooms[message.room].fire(message.name, message.data, message.user);
@@ -121,7 +121,8 @@
 		var self = this;
 
 		if (!self.rooms.hasOwnProperty(room_name)) {
-			self.rooms[room_name] = new Room(room_name);
+			var new_room = new Room(room_name);
+			self.rooms[room_name] = new_room;
 
 			self.send({
 				type: 'command',
@@ -131,7 +132,7 @@
 			});
 
 			self.fire('join', room_name);
-			return self.rooms[room_name];
+			return new_room;
 		};
 
 		return null;
@@ -163,4 +164,4 @@
 	__.augment(Room, __.PubSubPattern);
 
 	return MessengerClient;
-})(doubleunderscore)
+})();

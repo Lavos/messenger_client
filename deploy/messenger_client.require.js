@@ -1,4 +1,5 @@
-(function(__){
+define(['doubleunderscore'], function(){
+return (function(){
 	var MessengerClient = function MessengerClient (params) {
 		var self = this;
 
@@ -90,9 +91,9 @@
 			};
 
 			self.fire('message', message);
-			self.fire.call(self, message.room, message.name, message.data, message.user);
+			self.fire.call(self, message.room, message.name, message.data);
 			self.fire.call(self, __.sprintf("%s:%s", message.room, message.name), message.data, message.user);
-			self.fire.call(self, message.name, message.room, message.data, message.user);
+			self.fire.call(self, message.name, message.room, message.data);
 			
 			if (__.hasPath(self, __.sprintf('rooms.%s', message.room))) {
 				self.rooms[message.room].fire(message.name, message.data, message.user);
@@ -163,4 +164,5 @@
 	__.augment(Room, __.PubSubPattern);
 
 	return MessengerClient;
-})(doubleunderscore)
+})();
+});

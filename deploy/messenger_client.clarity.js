@@ -1,4 +1,5 @@
-(function(__){
+CLARITY.provide('messenger_client', ['doubleunderscore'], function(doubleunderscore){
+return (function(__){
 	var MessengerClient = function MessengerClient (params) {
 		var self = this;
 
@@ -163,4 +164,5 @@
 	__.augment(Room, __.PubSubPattern);
 
 	return MessengerClient;
-})(doubleunderscore)
+})(doubleunderscore);
+});
