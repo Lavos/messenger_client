@@ -18,6 +18,7 @@
 		self.timer = null;
 		self.state = 'closed';
 		self.rooms = {};
+		self.open_stash = new __.Stash();
 	};
 
 	__.augment(MessengerClient, __.PubSubPattern);
@@ -56,6 +57,8 @@
 					name: 'join'
 				});
 			});
+
+			self.open_stash.purge();
 		};
 
 		self.socket.onclose = function(e){
@@ -73,6 +76,8 @@
 					self.timer = setTimeout(function(){ self.timer = null; self.open(); }, self.options.retry_delay);
 				};
 			};
+
+			self.open_stash = new __.Stash();
 		};
 
 		self.socket.onerror = function(e){
@@ -113,8 +118,10 @@
 	MessengerClient.prototype.send = function send (message) {
 		var self = this;
 
-		self.socket.send(JSON.stringify(message));
-		self.fire('send', message);
+		self.open_stash.push(function(){
+			self.socket.send(JSON.stringify(message));
+			self.fire('send', message);
+		});
 	};
 
 	MessengerClient.prototype.join = function join (room_name) {
@@ -123,14 +130,17 @@
 		if (!self.rooms.hasOwnProperty(room_name)) {
 			self.rooms[room_name] = new Room(room_name);
 
-			self.send({
-				type: 'command',
-				room: room_name,
-				name: 'join',
-				data: {}
+			self.open_stash.push(function(){
+				self.send({
+					type: 'command',
+					room: room_name,
+					name: 'join',
+					data: {}
+				});
+
+				self.fire('join', room_name);
 			});
 
-			self.fire('join', room_name);
 			return self.rooms[room_name];
 		};
 
